@@ -3,58 +3,96 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI 讲道短视频助手 V1.0</title>
+<title>AI 讲道短视频助手 V1.1</title>
+<!-- V1.1-UI-20261101 -->
 <style>
-  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; max-width: 960px; margin: 0 auto; padding: 16px; color: #222; background: #fafafa; }
-  h1 { font-size: 22px; }
-  h2 { font-size: 18px; margin-top: 28px; border-bottom: 2px solid #2e7d32; padding-bottom: 4px; }
-  .steps { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
-  .step { padding: 6px 10px; border-radius: 16px; background: #e0e0e0; font-size: 14px; }
-  .step.on { background: #2e7d32; color: #fff; }
-  .card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin: 12px 0; }
-  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 13px; color: #fff; }
-  .pending_review { background: #ef6c00; } .modifying { background: #6a1b9a; }
-  .pending_rereview { background: #1565c0; } .confirmed { background: #2e7d32; }
-  .discarded { background: #757575; }
-  video { width: 100%; max-width: 480px; background: #000; border-radius: 8px; }
-  button { padding: 8px 14px; margin: 4px 4px 4px 0; border: none; border-radius: 6px; background: #2e7d32; color: #fff; font-size: 14px; cursor: pointer; }
-  button.secondary { background: #546e7a; } button.danger { background: #b71c1c; }
-  button:disabled { background: #bdbdbd; cursor: not-allowed; }
-  input[type=text], input[type=number] { padding: 6px; margin: 4px; width: 130px; }
-  .transcript { background: #f5f5f5; padding: 10px; border-radius: 6px; line-height: 2; font-size: 15px; }
-  .transcript span { cursor: pointer; padding: 0 1px; }
-  .transcript span.sel { background: #ffecb3; outline: 1px solid #ef6c00; }
-  .muted { color: #666; font-size: 13px; }
-  .err { color: #b71c1c; } .ok { color: #2e7d32; }
-  details { margin: 8px 0; }
-  .job { font-size: 13px; color: #444; }
+  :root { --green:#14532d; --green2:#1e6b3c; --navy:#1f3864; --bg:#f4f6f3; --card:#fff; --line:#dfe5df; --text:#222; --muted:#666; --danger:#b71c1c; --amber:#fff8e1; --amberline:#f0c75e; }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; margin:0 auto; padding:16px; max-width:1180px; color:var(--text); background:var(--bg); font-size:16px; line-height:1.6; }
+  h1 { font-size:24px; margin:8px 0 4px; }
+  h2 { font-size:19px; margin:24px 0 10px; }
+  .demo-banner { background:var(--amber); border:1px solid var(--amberline); border-radius:10px; padding:12px 16px; font-size:16px; }
+  .demo-banner b { color:#7a5b00; }
+  .muted { color:var(--muted); font-size:14px; }
+  .steps { display:flex; gap:8px; flex-wrap:wrap; margin:14px 0; }
+  .step { padding:8px 14px; border-radius:20px; background:#e3e7e3; font-size:15px; }
+  .step.done { background:#d9ead9; color:var(--green); border:1px solid #9cc39c; }
+  .step.on { background:var(--green); color:#fff; font-weight:bold; }
+  .step.wait { background:#e9e9e9; color:#888; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin:12px 0; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  .badge { display:inline-block; padding:3px 12px; border-radius:12px; font-size:14px; color:#fff; }
+  .pending_review { background:#ef6c00; } .modifying { background:#6a1b9a; }
+  .pending_rereview { background:#1565c0; } .confirmed { background:var(--green); }
+  .discarded { background:#757575; }
+  .workbench { display:grid; grid-template-columns:320px 1fr; gap:16px; align-items:start; }
+  .cliplist { display:flex; flex-direction:column; gap:10px; }
+  .clipitem { display:flex; gap:10px; padding:10px; border:2px solid var(--line); border-radius:10px; cursor:pointer; background:#fff; text-align:left; font-size:15px; color:var(--text); }
+  .clipitem.sel { border-color:var(--green); background:#eef6ee; }
+  .clipitem img.poster { width:72px; height:128px; object-fit:cover; border-radius:6px; background:#000; flex-shrink:0; }
+  .clipitem .no { font-weight:bold; color:var(--green); }
+  .clipitem .ttl { font-weight:bold; }
+  button { padding:12px 22px; margin:4px 6px 4px 0; border:none; border-radius:8px; background:var(--green); color:#fff; font-size:16px; cursor:pointer; min-height:46px; }
+  button.secondary { background:#546e7a; } button.danger { background:var(--danger); }
+  button:disabled { background:#bdbdbd; cursor:not-allowed; }
+  button.big { padding:14px 26px; font-size:17px; }
+  input[type=text], input[type=number] { padding:10px; margin:4px; font-size:16px; border:1px solid #ccc; border-radius:6px; }
+  input[type=number] { width:150px; }
+  .player-wrap { text-align:center; }
+  video { width:100%; max-width:420px; aspect-ratio:9/16; background:#000; border-radius:10px; }
+  .transcript { background:#f5f5f5; padding:12px; border-radius:8px; line-height:2.1; font-size:16px; }
+  .transcript span { cursor:pointer; padding:0 2px; }
+  .transcript span.sel { background:#ffecb3; outline:1px solid #ef6c00; }
+  .err { color:var(--danger); } .ok { color:var(--green); }
+  .notice { background:#eef6ee; border:1px solid #9cc39c; border-radius:8px; padding:10px 14px; margin:10px 0; font-size:15px; }
+  .warn { background:#fdf2e9; border:1px solid #f0c27a; border-radius:8px; padding:10px 14px; margin:10px 0; font-size:15px; }
+  details { margin:10px 0; }
+  details summary { cursor:pointer; font-size:15px; color:var(--green); }
+  .job { font-size:14px; color:#444; }
+  .stats { font-size:17px; }
+  .stats b { font-size:19px; }
+  @media (max-width:760px) {
+    .workbench { grid-template-columns:1fr; }
+    video { max-width:100%; }
+    button { width:100%; margin:6px 0; }
+  }
 </style>
 </head>
 <body>
-<h1>AI 讲道短视频助手 V1.0</h1>
-<p class="muted">上传长讲道 → AI 粗剪 → AI 精剪 → 逐条人工审核 → 全部确认后统一制作字幕、封面与四平台文案。审核阶段的视频一律无字幕，字幕只在最终包装烧录一次。</p>
+<h1>AI 讲道短视频助手 V1.1</h1>
+<p class="muted">V1.1 界面优化版。上传长讲道 → AI 粗剪 → AI 精剪 → 逐条人工审核 → 全部确认后统一制作字幕、封面与四平台文案。审核阶段的视频一律无字幕，字幕只在最终包装烧录一次。</p>
+
+<div class="demo-banner"><b>【临时演示】</b>这是临时演示站，不是正式任务存储。免费版休眠或重启后，这里的确认、废弃等状态会丢失。演示视频为合成测试内容，不是真实讲道。</div>
 
 <div class="steps" id="steps"></div>
+<p class="muted">粗剪和精剪由 AI 自动完成，你不需要自己操作，只需在第 4 步逐条审核：看视频，点确认、修改或废弃。</p>
 
-<h2>步骤 1：上传真实长视频</h2>
 <div class="card">
-  <div style="margin-top:10px">
-    <input type="file" id="uploadFile" accept="video/mp4">
-    <button onclick="uploadLocal()">上传本地 MP4 并开始转录</button>
-  </div>
-  <div style="margin-top:10px">
-    <input type="text" id="driveId" placeholder="Drive 文件 ID 或分享链接" style="width:320px">
-    <button onclick="fetchDrive()">从已授权 Google Drive 获取</button>
-  </div>
-  <div id="newTaskMsg" class="muted"></div>
-  <div style="margin-top:10px">
+  <div>
     <label>选择任务：</label>
-    <select id="taskSelect" onchange="loadTask(this.value)"></select>
+    <select id="taskSelect" onchange="loadTask(this.value)" style="font-size:16px;padding:8px"></select>
     <button class="secondary" onclick="refreshTasks()">刷新任务列表</button>
   </div>
+  <details>
+    <summary>上传新讲道（需要时再打开）</summary>
+    <div style="margin-top:10px">
+      <input type="file" id="uploadFile" accept="video/mp4">
+      <button onclick="uploadLocal()">上传本地 MP4 并开始转录</button>
+    </div>
+    <div style="margin-top:10px">
+      <input type="text" id="driveId" placeholder="Drive 文件 ID 或分享链接" style="width:320px">
+      <button onclick="fetchDrive()">从已授权 Google Drive 获取</button>
+    </div>
+    <div id="newTaskMsg" class="muted"></div>
+  </details>
 </div>
 
-<div id="taskView"></div>
+<div id="taskView">
+  <div id="statsBar"></div>
+  <div class="workbench">
+    <div id="clipList" class="cliplist"></div>
+    <div id="clipDetail"></div>
+  </div>
+</div>
 
 <h2>高级设置（普通同工不需要改动）</h2>
 <div class="card">
@@ -72,11 +110,17 @@
 
 <script>
 let TASK = null;
-const STATE_CN = {pending_review:'待审核', modifying:'修改中', pending_rereview:'待重新审核', confirmed:'已确认', discarded:'已废弃'};
-const STEPS = ['上传讲道','AI 粗剪','AI 精剪','人工审核','字幕包装与下载'];
+let SEL = null;
+let LAST_DETAIL_KEY = '';
+let MOD_OPEN = {};
+let MOD_BUSY = {};
+const STATE_CN = {pending_review:'待审核', modifying:'正在修改', pending_rereview:'待重新审核', confirmed:'已确认', discarded:'已废弃'};
+const STEPS = ['上传讲道','AI 粗剪（自动）','AI 精剪（自动）','人工审核','字幕包装与下载'];
 
 function el(id){ return document.getElementById(id); }
 function showErr(msg){ alert(msg); }
+function pad2(n){ return String(n).padStart(2,'0'); }
+function fmtSec(s){ return Math.round(s) + ' 秒'; }
 
 async function api(path, method='GET', body=null){
   const opt = {method, headers:{'Content-Type':'application/json'}};
@@ -91,7 +135,7 @@ async function refreshTasks(){
   const j = await api('/api/tasks');
   const sel = el('taskSelect');
   sel.innerHTML = j.tasks.map(t =>
-    `<option value="${t.id}">${t.id}｜${t.name}｜${t.status}｜${t.confirmed} 已确认 / ${t.discarded} 已废弃 / 共 ${t.clips} 条</option>`).join('');
+    `<option value="${t.id}">${t.id}｜${t.name}｜${t.confirmed} 已确认 / ${t.discarded} 已废弃 / 共 ${t.clips} 条</option>`).join('');
   if (j.tasks.length && !TASK) loadTask(j.tasks[0].id);
 }
 
@@ -120,100 +164,181 @@ async function fetchDrive(){
   } catch(e){ el('newTaskMsg').textContent = '失败：' + e.message; }
 }
 
-function renderSteps(){
-  let stepIdx = 0;
-  if (TASK){
-    const clips = TASK.clips || [];
-    if (TASK.status === 'done') stepIdx = 4;
-    else if (clips.some(c => c.state === 'confirmed')) stepIdx = 3;
-    else if (clips.some(c => c.fine_file)) stepIdx = 2;
-    else if (clips.some(c => c.rough_file)) stepIdx = 1;
-  }
-  el('steps').innerHTML = STEPS.map((s, i) =>
-    `<span class="step ${i === stepIdx ? 'on' : ''}">${i+1}. ${s}</span>`).join('');
+function stepStates(){
+  if (!TASK) return {cur:0, allDone:false};
+  const clips = TASK.clips || [];
+  if (TASK.status === 'done') return {cur:5, allDone:true};
+  if (TASK.gate && TASK.gate.ok) return {cur:4, allDone:false};
+  if (clips.length && clips.every(c => c.fine_file)) return {cur:3, allDone:false};
+  if (clips.length && clips.some(c => c.rough_file)) return {cur:2, allDone:false};
+  if (clips.length) return {cur:1, allDone:false};
+  return {cur:1, allDone:false};
 }
 
-async function loadTask(taskId){
+function renderSteps(){
+  const {cur, allDone} = stepStates();
+  el('steps').innerHTML = STEPS.map((s, i) => {
+    let cls = 'wait', suffix = '（等待）';
+    if (allDone || i < cur){ cls = 'done'; suffix = '（已完成）'; }
+    else if (i === cur){ cls = 'on'; suffix = '（当前）'; }
+    return `<span class="step ${cls}">${i+1}. ${s}${suffix}</span>`;
+  }).join('');
+}
+
+function counts(){
+  const clips = (TASK && TASK.clips) || [];
+  return {
+    total: clips.length,
+    confirmed: clips.filter(c => c.state === 'confirmed').length,
+    pending: clips.filter(c => c.state === 'pending_review' || c.state === 'pending_rereview').length,
+    modifying: clips.filter(c => c.state === 'modifying').length,
+    discarded: clips.filter(c => c.state === 'discarded').length
+  };
+}
+
+function nextPending(afterIdx){
+  const clips = TASK.clips || [];
+  let n = clips.find(c => c.index > afterIdx && (c.state === 'pending_review' || c.state === 'pending_rereview'));
+  if (!n) n = clips.find(c => c.state === 'pending_review' || c.state === 'pending_rereview');
+  return n || null;
+}
+
+async function loadTask(taskId, soft=false){
   if (!taskId) return;
   try {
     TASK = await api('/api/tasks/' + taskId);
+    if (SEL === null || !TASK.clips.some(c => c.index === SEL)){
+      const first = (TASK.clips || []).find(c => c.state === 'pending_review' || c.state === 'pending_rereview') || (TASK.clips || [])[0];
+      SEL = first ? first.index : null;
+    }
     renderSteps();
-    renderTask();
-  } catch(e){ showErr(e.message); }
+    renderStats();
+    renderList();
+    renderDetail(soft);
+  } catch(e){ if (!soft) showErr(e.message); }
+}
+
+function renderStats(){
+  const t = TASK, c = counts();
+  const gateMsg = (t.gate && t.gate.message) || '';
+  let html = `<h2>任务：${t.source.name}</h2><div class="card">`;
+  html += `<div class="stats">共 <b>${c.total}</b> 条｜已确认 <b>${c.confirmed}</b>｜待审核 <b>${c.pending}</b>｜正在修改 <b>${c.modifying}</b>｜已废弃 <b>${c.discarded}</b></div>`;
+  html += `<div class="muted">原长视频约 ${fmtSec(t.source.duration_s)}。${gateMsg}。</div>`;
+  html += `<div style="margin-top:10px"><button onclick="refreshTask()" class="secondary">刷新状态</button> `;
+  html += `<button onclick="doPackage()" class="big" ${t.gate && t.gate.ok ? '' : 'disabled'}>全部审核完成，开始最终制作</button>`;
+  if (!(t.gate && t.gate.ok)) html += `<span class="muted">（还有未审核或正在修改的片段时，这个按钮是灰色的，不能点。）</span>`;
+  else html += `<span class="muted">（将要包装 ${c.confirmed} 条已确认片段，废弃片段不参与。）</span>`;
+  if (t.status === 'done') html += ` <a href="/api/tasks/${t.id}/download"><button class="secondary">下载全部素材 ZIP</button></a>`;
+  html += `</div></div>`;
+  el('statsBar').innerHTML = html;
+}
+
+function renderList(){
+  const clips = TASK.clips || [];
+  if (!clips.length){
+    el('clipList').innerHTML = `<div class="card">本任务暂无片段。` +
+      (TASK.status === 'transcribed' ? `<button onclick="startHighlights()">开始高光分析（需批准 Gemini 调用）</button>` :
+       TASK.status === 'intaked' ? `转录进行中，完成后可继续高光分析。` : ``) + `</div>`;
+    return;
+  }
+  el('clipList').innerHTML = `<div class="muted" style="margin-bottom:6px">已确认 ${counts().confirmed} / 共 ${counts().total} 条。点一条，右边就显示它的视频。</div>` +
+    clips.map(c => {
+      const poster = `/media/${TASK.id}/clips/c${pad2(c.index)}/poster.jpg`;
+      return `<button class="clipitem ${c.index === SEL ? 'sel' : ''}" onclick="selectClip(${c.index})">
+        <img class="poster" src="${poster}" onerror="this.style.display='none'" alt="">
+        <span><span class="no">第 ${c.index} 条</span><br>
+        <span class="ttl">${c.title}</span><br>
+        <span class="muted">${fmtSec(c.duration)}</span><br>
+        <span class="badge ${c.state}">${STATE_CN[c.state] || c.state}</span></span>
+      </button>`;
+    }).join('');
+}
+
+function selectClip(idx){
+  SEL = idx;
+  LAST_DETAIL_KEY = '';
+  renderList();
+  renderDetail(false);
 }
 
 function clipVideo(c){
   const f = c.fine_file || c.rough_file;
-  return f ? `/media/${TASK.id}/${f}` : null;
+  return f ? `/media/${TASK.id}/${f}?v=${c.version || 1}` : null;
 }
 
-function renderTask(){
-  const t = TASK;
-  let html = `<h2>任务：${t.source.name}</h2><div class="card">`;
-  html += `<div>时长：${t.source.duration_s} 秒｜大小：${(t.source.size_bytes/1048576).toFixed(1)} MB｜分辨率：${t.source.width}x${t.source.height}</div>`;
-  html += `<div>源文件指纹（前 16 位）：${t.source.sha256_short}｜任务状态：${t.status}</div>`;
-  html += `<div class="job">包装门禁：${t.gate.message}。未确认片段：${t.gate.unconfirmed.length ? t.gate.unconfirmed.join('、') : '无'}</div>`;
-  if (t.jobs && t.jobs.length){
-    html += `<div class="job">后台作业：` + t.jobs.slice(-5).map(j =>
-      `${j.type}#${j.id.slice(0,6)}：${j.status}${j.detail ? '（' + j.detail + '）' : ''}${j.error ? '【失败：' + j.error + '】' : ''}`).join('；') + `</div>`;
-  }
-  html += `<div style="margin-top:8px"><button onclick="refreshTask()" class="secondary">刷新状态</button> `;
-  html += `<button onclick="doPackage()" ${t.gate.ok ? '' : 'disabled'}>全部审核完成，开始最终制作</button> `;
-  if (t.status === 'done') html += `<a href="/api/tasks/${t.id}/download"><button>下载全部素材 ZIP</button></a>`;
-  html += `</div></div>`;
+function detailKey(c){
+  return c ? [c.index, c.state, c.version, c.fine_file, c.rough_file].join('|') : '';
+}
 
-  html += `<h2>步骤 2–4：粗剪 → 精剪 → 人工审核（逐条进行）</h2>`;
-  if (!t.clips || !t.clips.length){
-    html += `<div class="card">本任务暂无片段。`;
-    if (t.status === 'transcribed') html += `<button onclick="startHighlights()">开始高光分析（需批准 Gemini 调用）</button>`;
-    else if (t.status === 'intaked') html += `转录进行中，完成后可继续高光分析。`;
+function renderDetail(soft){
+  const c = (TASK.clips || []).find(x => x.index === SEL);
+  if (!c){
+    el('clipDetail').innerHTML = `<div class="card">请在左侧选一条短视频开始审核。</div>`;
+    return;
+  }
+  const key = detailKey(c);
+  if (soft && key === LAST_DETAIL_KEY) return;
+  LAST_DETAIL_KEY = key;
+  const v = clipVideo(c);
+  let html = `<div class="card"><div class="player-wrap">`;
+  if (v) html += `<video controls preload="metadata" src="${v}"></video><div class="muted">当前播放：${c.fine_file ? '无字幕精剪版' : '无字幕粗剪版'}。审核阶段一律无字幕。</div>`;
+  else html += `<div class="muted">尚未生成视频。</div>`;
+  html += `</div>`;
+  html += `<h2 style="margin-top:14px">${c.title}</h2>`;
+  html += `<div>视频时长：${fmtSec(c.duration)}｜原视频起止：${c.start}–${c.end} 秒</div>`;
+  html += `<div>审核状态：<span class="badge ${c.state}">${STATE_CN[c.state] || c.state}</span></div>`;
+  if (c.hook) html += `<div class="muted">原话要点：${c.hook}</div>`;
+  if (c.fine_analysis) html += `<div>AI 精剪状态：${c.fine_analysis.note}。</div>`;
+  if (c.state === 'modifying') html += `<div class="warn">正在重新生成，请稍候。完成后播放器会自动更新成新版，状态会变回“待重新审核”。如果长时间没有完成，可以重新提交一次修改。</div>`;
+  if (MOD_BUSY[c.index]) html += `<div class="warn">正在重新生成，请稍候……</div>`;
+  if (c.state === 'confirmed') html += `<div class="notice">这条已经确认通过，版本已锁定。想改的话，请先点“撤销确认”。</div>`;
+  if (c.state === 'discarded') html += `<div class="muted">这条已废弃，不会进入最终包装。</div>`;
+  html += `<div style="margin-top:12px">`;
+  if (!c.rough_file) html += `<button onclick="genRough(${c.index})">生成粗剪（无字幕）</button>`;
+  if (c.rough_file && !c.fine_file) html += `<button onclick="genFine(${c.index})">生成精剪（无字幕）</button>`;
+  if (c.state === 'pending_review' || c.state === 'pending_rereview' || c.state === 'modifying'){
+    html += `<button class="big" onclick="approve(${c.index})" ${c.fine_file ? '' : 'disabled'}>确认通过</button>`;
+    html += `<button class="big secondary" onclick="toggleMod(${c.index})">要求修改</button>`;
+    html += `<button class="big danger" onclick="discard(${c.index})">废弃片段</button>`;
+  }
+  if (c.state === 'confirmed'){
+    html += `<button class="secondary" onclick="unconfirm(${c.index})">撤销确认</button>`;
+    if (c.final_file) html += `<a href="/media/${TASK.id}/${c.final_file}"><button class="secondary">下载最终成片</button></a>`;
+  }
+  html += `</div>`;
+  if (MOD_OPEN[c.index] && (c.state === 'pending_review' || c.state === 'pending_rereview' || c.state === 'modifying')){
+    html += `<div style="margin-top:14px; border-top:1px solid #eee; padding-top:12px">`;
+    html += `<div><b>开始时间：这条视频从哪里开始</b>（单位：秒，可以填小数，比如 12.5）<br><input type="number" id="ns-${c.index}" value="${c.start}" step="0.1"> 秒</div>`;
+    html += `<div style="margin-top:8px"><b>结束时间：这条视频到哪里结束</b>（单位：秒）<br><input type="number" id="ne-${c.index}" value="${c.end}" step="0.1"> 秒</div>`;
+    html += `<div class="muted">时间要在原长视频 0–${TASK.source.duration_s} 秒范围内；改完后长度要在 20–180 秒之间。不用懂剪辑术语，只要告诉它从哪里开始、到哪里结束。</div>`;
+    html += `<div style="margin-top:10px"><b>逐字稿：点一下不需要的文字，就会标黄表示删除；再点一次取消选择。</b></div>`;
+    html += `<div class="transcript" id="tp-${c.index}">`;
+    c.words.forEach((w, i) => { html += `<span data-pos="${i}" onclick="this.classList.toggle('sel')">${w.word}</span>`; });
+    html += `</div>`;
+    html += `<div style="margin-top:10px"><button class="big" onclick="submitMod(${c.index})">保存修改并重新生成（无字幕审核版）</button></div>`;
+    html += `<div class="muted">点保存后，后台会重新生成无字幕审核版；生成好后要重新审核，旧的已确认状态不会保留。原始长视频不会被改动。</div>`;
     html += `</div>`;
   }
-  (t.clips || []).forEach(c => {
-    const v = clipVideo(c);
-    html += `<div class="card" id="clip-${c.index}">`;
-    html += `<div><b>短视频${String(c.index).padStart(2,'0')}《${c.title}》</b> `;
-    html += `<span class="badge ${c.state}">${STATE_CN[c.state] || c.state}</span> `;
-    html += `<span class="muted">评分 ${c.score}｜原视频 ${c.start}–${c.end} 秒（${c.duration} 秒）｜${c.word_count} 词｜版本 ${c.version}</span></div>`;
-    if (c.hook) html += `<div class="muted">原话 hook：${c.hook}</div>`;
-    if (c.repairs && c.repairs.length) html += `<div class="muted">边界修复：${c.repairs.join('；')}</div>`;
-    if (c.fine_analysis) html += `<div>精剪：${c.fine_analysis.note}；删减明细：${(c.fine_analysis.deletes||[]).map(d => d.reason).join('；') || '无'}</div>`;
-    if (c.qc && c.qc.fine) html += `<div class="muted">精剪质检：${c.qc.fine.width}x${c.qc.fine.height}，${c.qc.fine.duration_s} 秒，音量 ${c.qc.fine.mean_volume}，黑屏段 ${c.qc.fine.black_segments}</div>`;
-    if (v) html += `<div style="margin:8px 0"><video controls preload="metadata" src="${v}"></video></div><div class="muted">当前播放：${c.fine_file ? '无字幕精剪版' : '无字幕粗剪版'}。审核阶段一律无字幕。</div>`;
-    else html += `<div class="muted">尚未生成视频，请先生成粗剪。</div>`;
-    html += `<div>`;
-    if (!c.rough_file) html += `<button onclick="genRough(${c.index})">生成粗剪（无字幕）</button>`;
-    if (c.rough_file && !c.fine_file) html += `<button onclick="genFine(${c.index})">生成精剪（无字幕）</button>`;
-    if (c.state === 'pending_review' || c.state === 'pending_rereview'){
-      html += `<button onclick="approve(${c.index})" ${c.fine_file ? '' : 'disabled'}>确认通过</button>`;
-      html += `<button class="secondary" onclick="toggleMod(${c.index})">修改</button>`;
-      html += `<button class="danger" onclick="discard(${c.index})">废弃</button>`;
-    }
-    if (c.state === 'confirmed'){
-      html += `<button class="secondary" onclick="unconfirm(${c.index})">撤销确认</button>`;
-      if (c.final_file) html += `<a href="/media/${TASK.id}/${c.final_file}"><button class="secondary">下载最终成片</button></a>`;
-    }
-    html += `</div>`;
-    html += `<div id="mod-${c.index}" style="display:none; margin-top:8px; border-top:1px solid #eee; padding-top:8px">`;
-    html += `<div class="muted">修改方式（第一版支持两类，改完重新导出无字幕版并回到“待重新审核”）：</div>`;
-    html += `开始时间（秒）<input type="number" id="ns-${c.index}" value="${c.start}" step="0.1"> 结束时间（秒）<input type="number" id="ne-${c.index}" value="${c.end}" step="0.1">`;
-    html += `<div class="muted">或在下方逐字稿中点选要删除的词句（再次点击取消），再点“提交修改”。自然语言修改（如“开头多保留 3 秒”）请先换算成时间码填写，本版暂不假装理解自然语言。</div>`;
-    html += `<button onclick="submitMod(${c.index})">提交修改并重新导出</button></div>`;
-    html += `<details><summary>查看逐字稿（点击词句可选中删除）</summary><div class="transcript" id="tp-${c.index}">`;
-    c.words.forEach((w, i) => {
-      html += `<span data-pos="${i}" onclick="this.classList.toggle('sel')">${w.word}</span>`;
-    });
-    html += `</div><div class="muted">逐字稿按精剪后时间线显示；删除后时间线会自动重算。</div></details>`;
-    html += `</div>`;
-  });
-  el('taskView').innerHTML = html;
+  html += `<details><summary>详细信息（技术参数，不用管也行）</summary>`;
+  html += `<div class="muted">评分 ${c.score}｜${c.word_count} 词｜版本 ${c.version}｜任务内序号 ${c.index}</div>`;
+  if (c.repairs && c.repairs.length) html += `<div class="muted">边界修复：${c.repairs.join('；')}</div>`;
+  if (c.fine_analysis) html += `<div class="muted">精剪删减明细：${(c.fine_analysis.deletes||[]).map(d => d.reason).join('；') || '无'}</div>`;
+  if (c.qc && c.qc.fine) html += `<div class="muted">质检：${c.qc.fine.width}x${c.qc.fine.height}，${c.qc.fine.duration_s} 秒，音量 ${c.qc.fine.mean_volume}，黑屏段 ${c.qc.fine.black_segments}</div>`;
+  if (TASK.jobs && TASK.jobs.length) html += `<div class="job">后台作业：` + TASK.jobs.slice(-5).map(j =>
+    `${j.type}#${j.id.slice(0,6)}：${j.status}${j.detail ? '（' + j.detail + '）' : ''}${j.error ? '【失败：' + j.error + '】' : ''}`).join('；') + `</div>`;
+  html += `</details></div>`;
+  el('clipDetail').innerHTML = html;
 }
 
 function refreshTask(){ if (TASK) loadTask(TASK.id); }
-function toggleMod(i){ const d = el('mod-' + i); d.style.display = d.style.display === 'none' ? 'block' : 'none'; }
+function toggleMod(i){
+  MOD_OPEN[i] = !MOD_OPEN[i];
+  LAST_DETAIL_KEY = '';
+  renderDetail(false);
+}
 
 async function genRough(i){
-  try { const j = await api(`/api/tasks/${TASK.id}/rough/${i}`, 'POST'); alert('粗剪任务已启动（后台渲染约需几分钟），请稍后点“刷新状态”。'); setTimeout(refreshTask, 5000); }
+  try { await api(`/api/tasks/${TASK.id}/rough/${i}`, 'POST'); alert('粗剪任务已启动（后台渲染约需几分钟），请稍后点“刷新状态”。'); setTimeout(refreshTask, 5000); }
   catch(e){ showErr(e.message); }
 }
 async function genFine(i){
@@ -221,36 +346,51 @@ async function genFine(i){
   catch(e){ showErr(e.message); }
 }
 async function approve(i){
-  try { await api(`/api/tasks/${TASK.id}/clips/${i}/approve`, 'POST'); refreshTask(); }
-  catch(e){ showErr(e.message); }
+  try {
+    await api(`/api/tasks/${TASK.id}/clips/${i}/approve`, 'POST');
+    const n = nextPending(i);
+    await loadTask(TASK.id);
+    if (n) selectClip(n.index);
+    else { LAST_DETAIL_KEY = ''; renderDetail(false); }
+  } catch(e){ showErr(e.message); }
 }
 async function discard(i){
-  if (!confirm('确定废弃这条片段吗？废弃后不进入最终包装。')) return;
-  try { await api(`/api/tasks/${TASK.id}/clips/${i}/discard`, 'POST'); refreshTask(); }
-  catch(e){ showErr(e.message); }
+  if (!confirm('确定要废弃这条片段吗？废弃后它不会进入最终包装，而且没有直接恢复的按钮，请确认。')) return;
+  try {
+    await api(`/api/tasks/${TASK.id}/clips/${i}/discard`, 'POST');
+    const n = nextPending(i);
+    await loadTask(TASK.id);
+    if (n) selectClip(n.index);
+    else { LAST_DETAIL_KEY = ''; renderDetail(false); }
+  } catch(e){ showErr(e.message); }
 }
 async function unconfirm(i){
-  try { await api(`/api/tasks/${TASK.id}/clips/${i}/unconfirm`, 'POST'); refreshTask(); }
+  try { await api(`/api/tasks/${TASK.id}/clips/${i}/unconfirm`, 'POST'); LAST_DETAIL_KEY = ''; refreshTask(); }
   catch(e){ showErr(e.message); }
 }
 async function submitMod(i){
   const ns = parseFloat(el('ns-' + i).value);
   const ne = parseFloat(el('ne-' + i).value);
+  if (!(ns < ne)) return showErr('开始时间要小于结束时间，请检查两个数字。');
+  if (ns < 0 || ne > TASK.source.duration_s) return showErr('时间超出了原长视频范围（0–' + TASK.source.duration_s + ' 秒）。');
+  if (ne - ns < 20 || ne - ns > 180) return showErr('改完后长度要在 20–180 秒之间，现在是 ' + (ne - ns).toFixed(1) + ' 秒。');
   const dels = [...document.querySelectorAll(`#tp-${i} span.sel`)].map(s => parseInt(s.dataset.pos));
   const body = {};
   const clip = TASK.clips.find(c => c.index === i);
   if (ns !== clip.start) body.new_start = ns;
   if (ne !== clip.end) body.new_end = ne;
   if (dels.length) body.delete_positions = dels;
-  if (!Object.keys(body).length) return showErr('没有改动：请调整时间码或点选要删除的词句');
+  if (!Object.keys(body).length) return showErr('没有改动：请调整开始或结束时间，或者点选要删除的词句。');
+  MOD_BUSY[i] = true; LAST_DETAIL_KEY = ''; renderDetail(false);
   try {
     await api(`/api/tasks/${TASK.id}/clips/${i}/modify`, 'POST', body);
-    alert('修改任务已启动，重新导出无字幕版后状态会变为“待重新审核”。');
+    MOD_BUSY[i] = false;
     setTimeout(refreshTask, 5000);
-  } catch(e){ showErr(e.message); }
+  } catch(e){ MOD_BUSY[i] = false; LAST_DETAIL_KEY = ''; renderDetail(false); showErr(e.message); }
 }
 async function doPackage(){
-  if (!confirm('确认全部保留片段都已通过审核，开始最终制作吗？这一步才会烧录字幕、生成封面与四平台文案。')) return;
+  const c = counts();
+  if (!confirm(`确认开始最终制作吗？将要包装 ${c.confirmed} 条已确认片段，废弃片段不参与。这一步才会烧录繁体字幕、生成封面与四平台文案。`)) return;
   try { await api(`/api/tasks/${TASK.id}/package`, 'POST'); alert('最终制作已启动，请稍后点“刷新状态”。'); setTimeout(refreshTask, 5000); }
   catch(e){ showErr(e.message); }
 }
@@ -259,7 +399,7 @@ async function startHighlights(){
   catch(e){ showErr(e.message); }
 }
 refreshTasks();
-setInterval(() => { if (TASK) loadTask(TASK.id); }, 30000);
+setInterval(() => { if (TASK) loadTask(TASK.id, true); }, 30000);
 </script>
 </body>
 </html>
